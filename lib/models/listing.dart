@@ -1,3 +1,4 @@
+// lib/models/listing.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Listing {
@@ -5,7 +6,7 @@ class Listing {
   final String title;
   final String description;
   final String imageUrl;
-  final Timestamp createdAt; // store createdAt as a field
+  final Timestamp createdAt;
 
   Listing({
     required this.id,
@@ -15,18 +16,18 @@ class Listing {
     required this.createdAt,
   });
 
-  // Factory to create from Firestore document
+  // Factory to create a Listing from Firestore data
   factory Listing.fromMap(Map<String, dynamic> data, String documentId) {
     return Listing(
       id: documentId,
       title: data['title'] ?? 'No title',
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
-      createdAt: data['createdAt'] ?? Timestamp.now(), // fallback if missing
+      createdAt: data['createdAt'] ?? Timestamp.now(),
     );
   }
 
-  // Convert Listing object to Map for Firestore
+  // Convert Listing to a Map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'title': title,

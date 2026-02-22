@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../models/listing.dart'; // keep using Listing
+import '../models/listing.dart';
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({Key? key}) : super(key: key);
@@ -48,35 +48,42 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     setState(() => _isLoading = true);
 
-    String imageUrl = '';
-    if (_imageFile != null) {
-      imageUrl = await _uploadImage(_imageFile!) ?? '';
+    try {
+      String imageUrl = '';
+      if (_imageFile != null) {
+        imageUrl = await _uploadImage(_imageFile!) ?? '';
+      }
+
+      // Create Listing object
+      final listing = Listing(
+        id: '', // Firestore will generate ID
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        imageUrl: imageUrl,
+        createdAt: Timestamp.now(),
+      );
+
+      // Save to Firestore
+      await FirebaseFirestore.instance
+          .collection('listings')
+          .add(listing.toMap());
+
+      // Clear fields
+      _titleController.clear();
+      _descriptionController.clear();
+      setState(() => _imageFile = null);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Listing created!')));
+    } catch (e) {
+      // Show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error during listing creation: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
-
-    // Create a Listing object instead of a raw Map
-    final listing = Listing(
-      id: '', // Firestore will generate the ID
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      imageUrl: imageUrl,
-      createdAt: Timestamp.now(),
-    );
-
-    // Convert Listing to Map and save to Firestore
-    await FirebaseFirestore.instance
-        .collection('listings')
-        .add((await listing.toMap) as Map<String, dynamic>);
-
-    setState(() => _isLoading = false);
-
-    // Clear fields
-    _titleController.clear();
-    _descriptionController.clear();
-    _imageFile = null;
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Listing created!')));
   }
 
   @override
