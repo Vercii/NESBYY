@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../models/listing.dart';
+import '../models/listing.dart'; // keep using Listing
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({Key? key}) : super(key: key);
@@ -40,8 +40,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     final uploadTask = storageRef.putFile(image);
     final snapshot = await uploadTask;
-    final downloadUrl = await snapshot.ref.getDownloadURL();
-    return downloadUrl;
+    return await snapshot.ref.getDownloadURL();
   }
 
   Future<void> _submit() async {
@@ -54,14 +53,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       imageUrl = await _uploadImage(_imageFile!) ?? '';
     }
 
-    final listingData = {
-      'title': _titleController.text.trim(),
-      'description': _descriptionController.text.trim(),
-      'imageUrl': imageUrl,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
+    // Create a Listing object instead of a raw Map
+    final listing = Listing(
+      id: '', // Firestore will generate the ID
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      imageUrl: imageUrl,
+      createdAt: Timestamp.now(),
+    );
 
-    await FirebaseFirestore.instance.collection('listings').add(listingData);
+    // Convert Listing to Map and save to Firestore
+    await FirebaseFirestore.instance
+        .collection('listings')
+        .add((await listing.toMap) as Map<String, dynamic>);
 
     setState(() => _isLoading = false);
 
