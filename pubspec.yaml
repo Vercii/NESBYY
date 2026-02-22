@@ -1,0 +1,32 @@
+name: nesbyy
+description: "A new Flutter project."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^4.4.0 # Compatible core
+  firebase_auth: ^6.1.4 # Latest auth that works with core
+  cloud_firestore: ^6.1.2 # Latest Firestore
+  firebase_storage: ^13.0.6 # Latest Storage
+
+  # State management
+  flutter_riverpod: ^2.5.0
+
+  # Images
+  image_picker: ^1.1.0
+  cached_network_image: ^3.3.0
+
+  # Charts & UI
+  fl_chart: ^0.60.0
+  flutter_spinkit: ^5.1.0
+
+  # Date formatting
+  intl: ^0.19.0
