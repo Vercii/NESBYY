@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/listing.dart';
 import '../widgets/listing_card.dart';
+import 'create_listing_screen.dart'; // Import the CreateListingScreen
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -41,6 +42,15 @@ class HomeScreen extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateListingScreen()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
