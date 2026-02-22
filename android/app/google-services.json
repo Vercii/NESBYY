@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446077732516",
+    "project_id": "nesbyy-36b39",
+    "storage_bucket": "nesbyy-36b39.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446077732516:android:63b86ef11bff0e6a230831",
+        "android_client_info": {
+          "package_name": "com.example.nesbyy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc204OCa8ZQ4aqeMiVbL_55SajzYkLexg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
