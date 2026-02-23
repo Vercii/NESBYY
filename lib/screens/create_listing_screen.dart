@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../models/listing.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nesbyy/widgets/listing_card.dart';
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({Key? key}) : super(key: key);
@@ -24,7 +25,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   final picker = ImagePicker();
 
-  // ⭐ NEW FIELDS
+  // ⭐ CATEGORY & TYPE
   String _selectedCategory = 'Electronics';
   String _listingType = 'SELLING';
 
@@ -52,28 +53,41 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     final uploadTask = storageRef.putFile(image);
     final snapshot = await uploadTask;
+
     return await snapshot.ref.getDownloadURL();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('You must be logged in')));
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
+      // Upload image
       String imageUrl = '';
       if (_imageFile != null) {
         imageUrl = await _uploadImage(_imageFile!) ?? '';
       }
 
-      // ⭐ Create Listing object with NEW fields
+      // ⭐ Create Listing WITH USER INFO
       final listing = Listing(
-        id: '', // Firestore generates ID
+        id: '',
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         imageUrl: imageUrl,
         category: _selectedCategory,
         type: _listingType,
+        sellerId: user.uid,
+        sellerEmail: user.email ?? '',
         createdAt: Timestamp.now(),
       );
 
@@ -82,7 +96,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           .collection('listings')
           .add(listing.toMap());
 
-      // Clear fields
+      // Clear form
       _titleController.clear();
       _descriptionController.clear();
 
@@ -95,6 +109,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Listing created!')));
+
+      Navigator.pop(context); // Go back to Home
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error during listing creation: $e')),
@@ -154,9 +170,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
               const SizedBox(height: 12),
 
-              // ⭐ CATEGORY DROPDOWN
+              // CATEGORY
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 items: _categories
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                     .toList(),
@@ -168,7 +184,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
               const SizedBox(height: 16),
 
-              // ⭐ BUYING / SELLING SELECTOR
+              // BUYING / SELLING
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -188,7 +204,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
               const SizedBox(height: 24),
 
-              // SUBMIT BUTTON
               _isLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(

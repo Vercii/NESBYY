@@ -1,101 +1,53 @@
-import 'package:flutter/material.dart';
-import '../models/listing.dart';
+// lib/models/listing.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ListingCard extends StatelessWidget {
-  final Listing listing;
+class Listing {
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String category;
+  final String type; // SELLING or BUYING
+  final String sellerEmail;
+  final Timestamp createdAt;
 
-  const ListingCard({Key? key, required this.listing}) : super(key: key);
+  Listing({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.category,
+    required this.type,
+    required this.sellerEmail,
+    required this.createdAt,
+    required String sellerId,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    final bool isSelling = listing.type.toUpperCase() == "SELLING";
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // IMAGE
-          if (listing.imageUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Image.network(
-                listing.imageUrl,
-                width: double.infinity,
-                height: 180,
-                fit: BoxFit.cover,
-              ),
-            ),
-
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // TITLE + TYPE BADGE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        listing.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelling
-                            ? Colors.green.withOpacity(0.15)
-                            : Colors.blue.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        listing.type.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isSelling ? Colors.green : Colors.blue,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
-                // CATEGORY
-                Text(
-                  listing.category,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // DESCRIPTION
-                Text(
-                  listing.description,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  // Factory to create a Listing from Firestore data safely
+  factory Listing.fromMap(Map<String, dynamic> data, String documentId) {
+    return Listing(
+      id: documentId,
+      title: data['title'] ?? 'No title',
+      description: data['description'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
+      category: data['category'] ?? 'Other',
+      type: data['type'] ?? 'SELLING',
+      sellerEmail: data['sellerEmail'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+      sellerId: '',
     );
+  }
+
+  // Convert Listing to a Map for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'category': category,
+      'type': type,
+      'sellerEmail': sellerEmail,
+      'createdAt': createdAt,
+    };
   }
 }
