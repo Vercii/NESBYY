@@ -12,10 +12,7 @@ class HomeScreen extends StatelessWidget {
     final listingsRef = FirebaseFirestore.instance.collection('listings');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nesbyy Marketplace'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('NESBYY'), centerTitle: true),
       body: StreamBuilder<QuerySnapshot>(
         stream: listingsRef.snapshots(),
         builder: (context, snapshot) {

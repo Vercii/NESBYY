@@ -24,6 +24,18 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   final picker = ImagePicker();
 
+  // ⭐ NEW FIELDS
+  String _selectedCategory = 'Electronics';
+  String _listingType = 'SELLING';
+
+  final List<String> _categories = [
+    'Electronics',
+    'Books',
+    'Clothing',
+    'Furniture',
+    'Other',
+  ];
+
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -54,12 +66,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         imageUrl = await _uploadImage(_imageFile!) ?? '';
       }
 
-      // Create Listing object
+      // ⭐ Create Listing object with NEW fields
       final listing = Listing(
-        id: '', // Firestore will generate ID
+        id: '', // Firestore generates ID
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         imageUrl: imageUrl,
+        category: _selectedCategory,
+        type: _listingType,
         createdAt: Timestamp.now(),
       );
 
@@ -71,13 +85,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // Clear fields
       _titleController.clear();
       _descriptionController.clear();
-      setState(() => _imageFile = null);
+
+      setState(() {
+        _imageFile = null;
+        _selectedCategory = 'Electronics';
+        _listingType = 'SELLING';
+      });
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Listing created!')));
     } catch (e) {
-      // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error during listing creation: $e')),
       );
@@ -96,6 +114,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           key: _formKey,
           child: Column(
             children: [
+              // IMAGE PREVIEW
               if (_imageFile != null)
                 Image.file(
                   _imageFile!,
@@ -103,20 +122,28 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   height: 200,
                   fit: BoxFit.cover,
                 ),
+
               const SizedBox(height: 12),
+
               ElevatedButton.icon(
                 onPressed: _pickImage,
                 icon: const Icon(Icons.image),
                 label: const Text('Pick Image'),
               ),
+
               const SizedBox(height: 12),
+
+              // TITLE
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Title'),
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter title' : null,
               ),
+
               const SizedBox(height: 12),
+
+              // DESCRIPTION
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -124,7 +151,44 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter description' : null,
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 12),
+
+              // ⭐ CATEGORY DROPDOWN
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                items: _categories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => _selectedCategory = value!);
+                },
+                decoration: const InputDecoration(labelText: 'Category'),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ⭐ BUYING / SELLING SELECTOR
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ChoiceChip(
+                    label: const Text('SELLING'),
+                    selected: _listingType == 'SELLING',
+                    onSelected: (_) => setState(() => _listingType = 'SELLING'),
+                  ),
+                  const SizedBox(width: 10),
+                  ChoiceChip(
+                    label: const Text('BUYING'),
+                    selected: _listingType == 'BUYING',
+                    onSelected: (_) => setState(() => _listingType = 'BUYING'),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // SUBMIT BUTTON
               _isLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
